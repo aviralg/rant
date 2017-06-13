@@ -1114,6 +1114,8 @@ static void SymbolShortcuts(void)
     R_dot_GenericCallEnv = install(".GenericCallEnv");
     R_dot_GenericDefEnv = install(".GenericDefEnv");
     R_dot_packageName = install(".packageName");
+
+    R_AnnotationsSymbol = install("annotations");
 }
 
 

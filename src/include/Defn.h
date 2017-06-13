@@ -101,6 +101,7 @@ extern0 SEXP    R_dot_GenericDefEnv;  /* ".GenericDefEnv" */
 
 extern0 SEXP	R_StringHash;       /* Global hash of CHARSXPs */
 
+extern0 SEXP R_AnnotationsSymbol; /* Annotations */
 
  /* writable char access for R internal use only */
 #define CHAR_RW(x)	((char *) CHAR(x))

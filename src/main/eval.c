@@ -2217,7 +2217,7 @@ SEXP attribute_hidden NORET do_return(SEXP call, SEXP op, SEXP args, SEXP rho)
 /* Declared with a variable number of args in names.c */
 SEXP attribute_hidden do_function(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP rval, srcref;
+  SEXP rval, srcref, annotations, names;
 
     if (TYPEOF(op) == PROMSXP) {
 	op = forcePromise(op);
@@ -2225,6 +2225,19 @@ SEXP attribute_hidden do_function(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     if (length(args) < 2) WrongArgCount("function");
     CheckFormals(CAR(args));
+    names = PROTECT(allocVector(STRSXP, 3));
+    annotations = PROTECT(allocVector(VECSXP, 3));
+    SET_STRING_ELT(names, 0, mkChar("header"));
+    SET_VECTOR_ELT(annotations, 0, getAttrib(call, R_AnnotationsSymbol));
+    ATTRIB(call) = R_NilValue;
+    SET_STRING_ELT(names, 1, mkChar("formals"));
+    SET_VECTOR_ELT(annotations, 1, getAttrib(CADR(call), R_AnnotationsSymbol));
+    ATTRIB(CADR(call)) = R_NilValue;
+    SET_STRING_ELT(names, 2, mkChar("body"));
+    SET_VECTOR_ELT(annotations, 2, getAttrib(CADDR(call), R_AnnotationsSymbol));
+    setAttrib(annotations, R_NamesSymbol, names);
+    UNPROTECT(2);
+    if (CADR(args) != R_NilValue) setAttrib(CADR(args), R_AnnotationsSymbol, annotations);
     rval = mkCLOSXP(CAR(args), CADR(args), rho);
     srcref = CADDR(args);
     if (!isNull(srcref)) setAttrib(rval, R_SrcrefSymbol, srcref);
