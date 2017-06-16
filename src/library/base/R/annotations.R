@@ -50,8 +50,14 @@ is.annotated <- function(object) !is.null(annotations(object))
                          "body" = .Internal(new.env(TRUE, emptyenv(), 29L)),
                          "footer" = .Internal(new.env(TRUE, emptyenv(), 29L))))
 
-annotations.create.handler <- function(name, transformer) {
-  handler <- list(name = name, transformer = transformer)
+annotations.create.handler <- function(name,
+                                       action,
+                                       mode = "individual",
+                                       remove = FALSE) {
+  handler <- list(name = name,
+                  action = action,
+                  mode = mode,
+                  remove = remove)
   class(handler) <- c("annotations.handler")
   handler
 }
@@ -87,19 +93,41 @@ annotations.invoke.function <- function(object, name, env) {
     for(name in ls(mapping[[type]])) {
       handler <- mapping[[type]][[name]]
       matcher <- handler$matcher
-      transformer <- handler$transformer
+      action <- handler$action
+      mode <- handler$mode
+      remove <- handler$remove
+      matches <- NULL
+      anns <- NULL
       for(annotation in all_annotations[[type]]) {
         match <- matcher(annotation)
-        if(!is.null(match))
-          object <- transformer(object, name, env, match, annotation)
+        if(!is.null(match)) {
+          if(mode != "digest")
+            object <- action(object, name, env, match)
+          else
+            matches <- append(matches, match)
+          if(mode == "once")
+            break
+        } else {
+            anns <- append(anns, annotation)
+        }
       }
+      if(!is.null(matches))
+        object <<- action(object, name, env, matches)
+      if(remove)
+        all_annotations[[type]] <<- anns
     }
     object
   }
-  object <- handle("header")
-  object <- handle("formals")
-  object <- handle("body")
-  object <- handle("footer")
-  attr(object, "annotations") <- all_annotations
+  handle("header")
+  handle("formals")
+  handle("body")
+  handle("footer")
+  attr(body(object), "annotations") <- all_annotations
   object
+}
+
+print.annotations.function <- function(annotations) {
+  print(paste0("header => ", paste0(annotations$header)))
+  print(paste0("formals => ", paste0(annotations$formals)))
+  print(paste0("body => ", paste0(annotations$body)))
 }

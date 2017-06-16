@@ -2236,6 +2236,7 @@ SEXP attribute_hidden do_function(SEXP call, SEXP op, SEXP args, SEXP rho)
     SET_STRING_ELT(names, 2, mkChar("body"));
     SET_VECTOR_ELT(annotations, 2, getAttrib(CADDR(call), R_AnnotationsSymbol));
     setAttrib(annotations, R_NamesSymbol, names);
+    setAttrib(annotations, R_ClassSymbol, mkString("annotations.function"));
     UNPROTECT(2);
     if (CADR(args) != R_NilValue) setAttrib(CADR(args), R_AnnotationsSymbol, annotations);
     rval = mkCLOSXP(CAR(args), CADR(args), rho);
