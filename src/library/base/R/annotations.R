@@ -126,8 +126,34 @@ annotations.invoke.function <- function(object, name, env) {
   object
 }
 
+delimit <- function(annotation) paste("@|", annotation, "|@", sep = "")
+collapse <- function(anns) {
+  if(is.null(anns)) "NULL"
+  else paste(Map(delimit, anns), collapse = " ")
+}
+
+print.annotations.function.header <- function(annotations) {
+  paste("header  :: ", collapse(annotations), "\n", sep = "", collapse = "")
+}
+
+print.annotations.function.formals <- function(annotations) {
+  format <- function(formal_name) {
+    paste(formal_name, collapse(annotations[[formal_name]]), sep = "    ")
+  }
+  paste(
+    "formals :: ",
+    paste(Map(format, names(annotations)), collapse = "\n            "),
+    "\n",
+    sep = "")
+}
+
+print.annotations.function.body <- function(annotations) {
+  paste("body    :: ", collapse(annotations), "\n", sep = "", collapse = "")
+}
+
 print.annotations.function <- function(annotations) {
-  print(paste0("header => ", paste0(annotations$header)))
-  print(paste0("formals => ", paste0(annotations$formals)))
-  print(paste0("body => ", paste0(annotations$body)))
+  cat(paste(print.annotations.function.header(annotations$header),
+            print.annotations.function.formals(annotations$formals),
+            print.annotations.function.body(annotations$body),
+            sep = ""))
 }
