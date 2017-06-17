@@ -2216,11 +2216,11 @@ SEXP attribute_hidden NORET do_return(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 static SEXP make_annotations(SEXP call) {
   SEXP annotations, names;
-  SEXP header_annotations = getAttrib(call, R_AnnotationsSymbol);
+  SEXP header_annotations = getAttrib(CADDR(call), install("header"));
   SEXP formals_annotations = getAttrib(CADR(call), R_AnnotationsSymbol);
-  SEXP body_annotations = getAttrib(CADDR(call), R_AnnotationsSymbol);
+  SEXP body_annotations = getAttrib(CADDR(call), install("body"));
+  SEXP footer_annotations = getAttrib(CADDR(call), install("footer"));
 
-  ATTRIB(call) = R_NilValue;
   ATTRIB(CADR(call)) = R_NilValue;
   ATTRIB(CADDR(call)) = R_NilValue;
 
@@ -2229,11 +2229,14 @@ static SEXP make_annotations(SEXP call) {
     not_annotated = not_annotated && isNull(CAR(node));
   }
 
-  if(isNull(header_annotations) && not_annotated && isNull(body_annotations))
+  if(isNull(header_annotations) &&
+     not_annotated &&
+     isNull(body_annotations) &&
+     isNull(footer_annotations))
     return R_NilValue;
 
-  names = PROTECT(allocVector(STRSXP, 3));
-  annotations = PROTECT(allocVector(VECSXP, 3));
+  names = PROTECT(allocVector(STRSXP, 4));
+  annotations = PROTECT(allocVector(VECSXP, 4));
 
   SET_STRING_ELT(names, 0, mkChar("header"));
   SET_VECTOR_ELT(annotations, 0, header_annotations);
@@ -2243,6 +2246,9 @@ static SEXP make_annotations(SEXP call) {
 
   SET_STRING_ELT(names, 2, mkChar("body"));
   SET_VECTOR_ELT(annotations, 2, body_annotations);
+
+  SET_STRING_ELT(names, 3, mkChar("footer"));
+  SET_VECTOR_ELT(annotations, 3, footer_annotations);
 
   setAttrib(annotations, R_NamesSymbol, names);
   setAttrib(annotations, R_ClassSymbol, mkString("annotations.function"));
