@@ -2216,44 +2216,63 @@ SEXP attribute_hidden NORET do_return(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 static SEXP make_annotations(SEXP call) {
   SEXP annotations, names;
-  SEXP header_annotations = getAttrib(CADDR(call), install("header"));
-  SEXP formals_annotations = getAttrib(CADR(call), R_AnnotationsSymbol);
-  SEXP body_annotations = getAttrib(CADDR(call), install("body"));
-  SEXP footer_annotations = getAttrib(CADDR(call), install("footer"));
+  SEXP src, dest;
+  SEXP header_anns = PROTECT(getAttrib(call, R_AnnotationsSymbol));
+  SEXP formals_anns = PROTECT(getAttrib(CADR(call), R_AnnotationsSymbol));
+  SEXP body_anns = PROTECT(getAttrib(CADDR(call), R_AnnotationsSymbol));
 
+  /* Reset the attributes added by the parser for annotation purposes on the */
+  /* subexpressions of a function expression */
+  ATTRIB(call) = R_NilValue;
   ATTRIB(CADR(call)) = R_NilValue;
   ATTRIB(CADDR(call)) = R_NilValue;
 
-  int not_annotated = 1;
-  for(SEXP node = formals_annotations; node != R_NilValue ; node = CDR(node)) {
-    not_annotated = not_annotated && isNull(CAR(node));
+  /* int not_annotated = 1; */
+  /* int length = 0; */
+
+  /* for(SEXP node = CADR(call); node != R_NilValue ; node = CDR(node)) { */
+  /*   not_annotated = not_annotated && */
+  /*     isNull(getAttrib(node, R_AnnotationsSymbol)); */
+  /*   length += 1; */
+  /* } */
+
+  /* Don't add annotations for unannotated functions. This lets existing code */
+  /* pass the tests and work without surprises. */
+  if(isNull(header_anns) && isNull(formals_anns) && isNull(body_anns)) {
+    UNPROTECT(3);
+    return R_NilValue;
   }
 
-  if(isNull(header_annotations) &&
-     not_annotated &&
-     isNull(body_annotations) &&
-     isNull(footer_annotations))
-    return R_NilValue;
+  /* printf("\nHere"); */
+  /* Rf_PrintValue(getAttrib(CDR(call), R_AnnotationsSymbol)); */
 
-  names = PROTECT(allocVector(STRSXP, 4));
-  annotations = PROTECT(allocVector(VECSXP, 4));
+  /* if(!not_annotated) { */
+  /*   Rf_PrintValue(getAttrib(CADR(call), R_AnnotationsSymbol)); */
+  /*   formals_annotations = allocList(length); */
+  /*   for(src = CADR(call), dest = formals_annotations; */
+  /*       src != R_NilValue; src = CDR(src), dest = CDR(dest)) { */
+      
+  /*     SET_TAG(dest, TAG(src)); */
+  /*     SETCAR(dest, getAttrib(src, R_AnnotationsSymbol)); */
+      
+  /*   } */
+  /* } */
+
+  names = PROTECT(allocVector(STRSXP, 3));
+  annotations = PROTECT(allocVector(VECSXP, 3));
 
   SET_STRING_ELT(names, 0, mkChar("header"));
-  SET_VECTOR_ELT(annotations, 0, header_annotations);
+  SET_VECTOR_ELT(annotations, 0, header_anns);
 
   SET_STRING_ELT(names, 1, mkChar("formals"));
-  SET_VECTOR_ELT(annotations, 1, formals_annotations);
+  SET_VECTOR_ELT(annotations, 1, formals_anns);
 
   SET_STRING_ELT(names, 2, mkChar("body"));
-  SET_VECTOR_ELT(annotations, 2, body_annotations);
-
-  SET_STRING_ELT(names, 3, mkChar("footer"));
-  SET_VECTOR_ELT(annotations, 3, footer_annotations);
+  SET_VECTOR_ELT(annotations, 2, body_anns);
 
   setAttrib(annotations, R_NamesSymbol, names);
-  setAttrib(annotations, R_ClassSymbol, mkString("annotations.function"));
 
-  UNPROTECT(2);
+  UNPROTECT(5);
 
   return annotations;
 }

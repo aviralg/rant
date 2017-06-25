@@ -7459,7 +7459,7 @@ $foo
 > p <- parse(text = raw)
 > getParseData(p)
    line1 col1 line2 col2 id parent          token terminal          text
-31     2    1     4   15 31      0           expr    FALSE              
+31     2    1     4   15 31      0          fexpr    FALSE              
 3      2    1     2    8  3     31       FUNCTION     TRUE      function
 4      2    9     2    9  4     31            '('     TRUE             (
 5      2   11     2   11  5     31 SYMBOL_FORMALS     TRUE             a
