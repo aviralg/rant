@@ -470,12 +470,9 @@ formlist:							{ $$ = xxnullformal(); }
 cr	:					{ EatLines = 1; }
 	;
 
-/* EatLines = 0; has to be added, otherwise the REPL keeps reading newlines */
-/*   until the function 'function(x) @:body {}'  is terminated with a ';'. */
-/*   Simply put, empty body delimited by braces doesn't work properly unless */
-/*   EatLines is explicitly set to 0; */
 fexpr	:	FUNCTION '(' formlist ')' cr expr_or_assign %prec LOW			{ $$ = xxdefun($1,$3,$6,&@$);		setId( $$, @$); }
-	|	FUNCTION '(' formlist ')' cr annlist '{' exprlist '}' %prec LOW	{ $$ = xxannfunbody($1,$3,$6,$7,&@7,$8,&@$);		setId( $$, @$); EatLines = 0; }
+	|	FUNCTION '(' formlist ')' cr annlist '{' exprlist '}' %prec LOW	{ $$ = xxannfunbody($1,$3,$6,$7,&@7,$8,&@$);		setId( $$, @$); }
+	|	FUNCTION '(' formlist ')' cr annlist '\n' '{' exprlist '}' %prec LOW	{ $$ = xxannfunbody($1,$3,$6,$8,&@8,$9,&@$);		setId( $$, @$); }
 	;
 
 annlist	:	ann 				{ $$ = xxannlist1($1); }

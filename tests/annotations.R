@@ -27,7 +27,16 @@ annotations(environment())
 
 subtracter <-
     @:author("Scooby", "Doo", "scooby-doo@mystery.machine")
-    function(@:numeric x, @:numeric y) @:numeric { x - y }
+    function(@:numeric x #comment
+            ,@:numeric y #another comment
+             #yet another comment
+             ) #comment 1
+             # comment2
+             #can have any number of comments here
+             @:numeric
+    {
+        x - y
+    }
 
 annotations(subtracter, "header")
 annotations(subtracter, "formals")
@@ -126,7 +135,7 @@ annotations(f6, "body")
 # multiple body annotations
 f7 <- function(x) @:body1
 @:body2
-@:body3 { #TODO - parsing bug here!
+@:body3 {
     x
 }
 
